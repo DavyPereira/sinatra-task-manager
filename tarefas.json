@@ -1,20 +1,16 @@
 [
   {
-    "id": 1,
-    "texto": "ler a bíblia",
-    "prioridade": "alta",
-    "concluida": true
-  },
-  {
-    "id": 2,
-    "texto": "ver videos da fortes sobre gestão",
+    "id": 4,
+    "texto": "planilha inss",
+    "categoria": "fortes",
     "prioridade": "media",
     "concluida": false
   },
   {
-    "id": 3,
-    "texto": "planilha inss",
-    "prioridade": "baixa",
+    "id": 5,
+    "texto": "ver videos da fortes sobre gestão",
+    "categoria": "CEFIS",
+    "prioridade": "media",
     "concluida": false
   }
 ]
