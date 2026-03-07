@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "texto": "ler a bíblia",
+    "prioridade": "alta",
+    "concluida": true
+  },
+  {
+    "id": 2,
+    "texto": "ver videos da fortes sobre gestão",
+    "prioridade": "media",
+    "concluida": false
+  },
+  {
+    "id": 3,
+    "texto": "planilha inss",
+    "prioridade": "baixa",
+    "concluida": false
+  }
+]
