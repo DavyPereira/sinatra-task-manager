@@ -33,6 +33,16 @@ body {
   margin-bottom: 25px;
 }
 
+.mensagem {
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid #bae6fd;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 .nova-tarefa-form {
   display: flex;
   gap: 10px;

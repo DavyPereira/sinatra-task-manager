@@ -8,7 +8,6 @@ ARQUIVO_TAREFAS = ENV.fetch('ARQUIVO_TAREFAS', File.expand_path('tarefas.json', 
 
 def garantir_arquivo
   return if File.exist?(ARQUIVO_TAREFAS)
-
   File.write(ARQUIVO_TAREFAS, '[]')
 end
 
@@ -53,6 +52,7 @@ get '/' do
   end
 
   @filtro = params[:filtro].to_s
+  @mensagem = params[:mensagem].to_s
 
   @tarefas_filtradas =
     case @filtro
@@ -85,19 +85,29 @@ post '/tarefas' do
   prioridade = 'media' unless prioridades_validas.include?(prioridade)
   categoria = 'Geral' if categoria.empty?
 
-  unless texto.empty?
-    tarefas << {
-      id: proximo_id(tarefas),
-      texto: texto,
-      categoria: categoria,
-      prioridade: prioridade,
-      concluida: false
-    }
-
-    salvar_tarefas(tarefas)
+  if texto.empty?
+    redirect '/?mensagem=Digite+uma+tarefa+valida'
   end
 
-  redirect '/'
+  tarefa_duplicada = tarefas.any? do |t|
+    t[:texto].to_s.strip.downcase == texto.downcase &&
+      t[:categoria].to_s.strip.downcase == categoria.downcase
+  end
+
+  if tarefa_duplicada
+    redirect "/?mensagem=Essa+tarefa+ja+existe+na+categoria+#{categoria.gsub(' ', '+')}"
+  end
+
+  tarefas << {
+    id: proximo_id(tarefas),
+    texto: texto,
+    categoria: categoria,
+    prioridade: prioridade,
+    concluida: false
+  }
+
+  salvar_tarefas(tarefas)
+  redirect '/?mensagem=Tarefa+adicionada+com+sucesso'
 end
 
 post '/tarefas/:id/concluir' do
