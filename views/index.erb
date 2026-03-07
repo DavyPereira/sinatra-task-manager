@@ -11,7 +11,7 @@
     <section class="card">
       <header class="topo">
         <h1>Lista de Tarefas</h1>
-        <p>Organize o dia de forma simples.</p>
+        <p>Organize o dia por categorias.</p>
       </header>
 
       <form action="/tarefas" method="post" class="nova-tarefa-form">
@@ -20,6 +20,14 @@
           name="texto"
           placeholder="Digite uma nova tarefa..."
           maxlength="120"
+          required
+        >
+
+        <input
+          type="text"
+          name="categoria"
+          placeholder="Categoria ou pendência (ex: Fortes)"
+          maxlength="60"
           required
         >
 
@@ -33,63 +41,73 @@
       </form>
 
       <div class="resumo">
+        <span>Todas: <strong><%= @total_tarefas %></strong></span>
         <span>Pendentes: <strong><%= @total_pendentes %></strong></span>
         <span>Concluídas: <strong><%= @total_concluidas %></strong></span>
       </div>
 
       <div class="filtros">
-  <a href="/?filtro=todas"
-     class="filtro-btn <%= 'ativo' if @filtro == 'todas' %>">
-     Todas
-  </a>
+        <a href="/?filtro=todas" class="filtro-btn <%= 'ativo' if @filtro == 'todas' %>">
+          Todas
+          <span class="contador"><%= @total_tarefas %></span>
+        </a>
 
-  <a href="/?filtro=pendentes"
-     class="filtro-btn <%= 'ativo' if @filtro == 'pendentes' %>">
-     Pendentes
-  </a>
+        <a href="/?filtro=pendentes" class="filtro-btn <%= 'ativo' if @filtro == 'pendentes' %>">
+          Pendentes
+          <span class="contador"><%= @total_pendentes %></span>
+        </a>
 
-  <a href="/?filtro=concluidas"
-     class="filtro-btn <%= 'ativo' if @filtro == 'concluidas' %>">
-     Concluídas
-  </a>
-</div>
-
-      <div class="lista">
-        <% if @tarefas.empty? %>
-          <div class="vazio">
-            Nenhuma tarefa encontrada neste filtro.
-          </div>
-        <% else %>
-          <% @tarefas.each do |tarefa| %>
-            <div class="item <%= 'concluida' if tarefa[:concluida] %> prioridade-<%= tarefa[:prioridade] || 'media' %>">
-              <div class="conteudo-tarefa">
-                <div class="texto">
-                  <%= tarefa[:texto] %>
-                </div>
-
-                <div class="meta">
-                  Prioridade:
-                  <span class="tag-prioridade <%= tarefa[:prioridade] || 'media' %>">
-                    <%= (tarefa[:prioridade] || 'media').capitalize %>
-                  </span>
-                </div>
-              </div>
-
-              <div class="acoes">
-                <form action="/tarefas/<%= tarefa[:id] %>/concluir" method="post">
-                  <button type="submit" class="btn concluir">
-                    <%= tarefa[:concluida] ? 'Desmarcar' : 'Concluir' %>
-                  </button>
-                </form>
-
-                <form action="/tarefas/<%= tarefa[:id] %>/excluir" method="post" onsubmit="return confirm('Excluir esta tarefa?')">
-                  <button type="submit" class="btn excluir">Excluir</button>
-                </form>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
+        <a href="/?filtro=concluidas" class="filtro-btn <%= 'ativo' if @filtro == 'concluidas' %>">
+          Concluídas
+          <span class="contador"><%= @total_concluidas %></span>
+        </a>
       </div>
+
+      <% if @tarefas_por_categoria.empty? %>
+        <div class="vazio">
+          Nenhuma tarefa encontrada neste filtro.
+        </div>
+      <% else %>
+        <% @tarefas_por_categoria.each do |categoria, tarefas| %>
+          <section class="bloco-categoria">
+            <div class="cabecalho-categoria">
+              <h2><%= categoria %></h2>
+              <span class="badge-categoria"><%= tarefas.count %> tarefa(s)</span>
+            </div>
+
+            <div class="lista">
+              <% tarefas.each do |tarefa| %>
+                <div class="item <%= 'concluida' if tarefa[:concluida] %> prioridade-<%= tarefa[:prioridade] || 'media' %>">
+                  <div class="conteudo-tarefa">
+                    <div class="texto">
+                      <%= tarefa[:texto] %>
+                    </div>
+
+                    <div class="meta">
+                      Prioridade:
+                      <span class="tag-prioridade <%= tarefa[:prioridade] || 'media' %>">
+                        <%= (tarefa[:prioridade] || 'media').capitalize %>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="acoes">
+                    <form action="/tarefas/<%= tarefa[:id] %>/concluir" method="post">
+                      <button type="submit" class="btn concluir">
+                        <%= tarefa[:concluida] ? 'Desmarcar' : 'Concluir' %>
+                      </button>
+                    </form>
+
+                    <form action="/tarefas/<%= tarefa[:id] %>/excluir" method="post" onsubmit="return confirm('Excluir esta tarefa?')">
+                      <button type="submit" class="btn excluir">Excluir</button>
+                    </form>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      <% end %>
 
       <% if @total_concluidas > 0 %>
         <form action="/limpar_concluidas" method="post" class="rodape-acoes" onsubmit="return confirm('Remover todas as tarefas concluídas?')">

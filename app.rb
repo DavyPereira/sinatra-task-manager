@@ -37,8 +37,15 @@ get '/' do
 
   ordem_prioridade = { "alta" => 0, "media" => 1, "baixa" => 2 }
 
+  tarefas = tarefas.map do |tarefa|
+    tarefa[:categoria] = tarefa[:categoria].to_s.strip.empty? ? 'Geral' : tarefa[:categoria]
+    tarefa[:prioridade] = tarefa[:prioridade].to_s.strip.empty? ? 'media' : tarefa[:prioridade]
+    tarefa
+  end
+
   tarefas = tarefas.sort_by do |tarefa|
     [
+      tarefa[:categoria].downcase,
       tarefa[:concluida] ? 1 : 0,
       ordem_prioridade[tarefa[:prioridade].to_s] || 3,
       tarefa[:id]
@@ -47,7 +54,7 @@ get '/' do
 
   @filtro = params[:filtro].to_s
 
-  @tarefas =
+  @tarefas_filtradas =
     case @filtro
     when 'pendentes'
       tarefas.select { |t| !t[:concluida] }
@@ -57,6 +64,8 @@ get '/' do
       @filtro = 'todas'
       tarefas
     end
+
+  @tarefas_por_categoria = @tarefas_filtradas.group_by { |t| t[:categoria] }
 
   @total_tarefas = tarefas.length
   @total_pendentes = tarefas.count { |t| !t[:concluida] }
@@ -70,14 +79,17 @@ post '/tarefas' do
 
   texto = params[:texto].to_s.strip
   prioridade = params[:prioridade].to_s.strip.downcase
+  categoria = params[:categoria].to_s.strip
 
   prioridades_validas = %w[alta media baixa]
   prioridade = 'media' unless prioridades_validas.include?(prioridade)
+  categoria = 'Geral' if categoria.empty?
 
   unless texto.empty?
     tarefas << {
       id: proximo_id(tarefas),
       texto: texto,
+      categoria: categoria,
       prioridade: prioridade,
       concluida: false
     }
