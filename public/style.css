@@ -20,7 +20,7 @@ body {
   background: white;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 .topo h1 {
@@ -32,8 +32,6 @@ body {
   color: #6b7280;
   margin-bottom: 25px;
 }
-
-/* FORM */
 
 .nova-tarefa-form {
   display: flex;
@@ -52,6 +50,7 @@ body {
 
 .nova-tarefa-form input {
   flex: 1;
+  min-width: 180px;
 }
 
 .nova-tarefa-form button {
@@ -67,21 +66,19 @@ body {
   background: #3730a3;
 }
 
-/* RESUMO */
-
 .resumo {
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
   color: #374151;
+  flex-wrap: wrap;
 }
-
-/* FILTROS */
 
 .filtros {
   display: flex;
   gap: 10px;
   margin-bottom: 25px;
+  flex-wrap: wrap;
 }
 
 .filtro-btn {
@@ -91,6 +88,9 @@ body {
   border-radius: 20px;
   text-decoration: none;
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .filtro-btn.ativo {
@@ -99,44 +99,80 @@ body {
 }
 
 .contador {
-  margin-left: 6px;
   font-weight: bold;
 }
 
-/* CATEGORIAS */
-
 .bloco-categoria {
-  margin-bottom: 30px;
+  margin-bottom: 18px;
+}
+
+.botao-categoria {
+  width: 100%;
+  border: none;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.botao-categoria:hover {
+  background: #eef2ff;
+}
+
+.botao-categoria.aberta {
+  border-color: #c7d2fe;
+  background: #eef2ff;
 }
 
 .cabecalho-categoria {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 12px;
 }
 
-.cabecalho-categoria h2 {
-  font-size: 20px;
+.titulo-categoria {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titulo-categoria h2 {
+  font-size: 18px;
+  color: #111827;
+}
+
+.seta {
+  font-size: 16px;
+  color: #4338ca;
+  width: 16px;
+  text-align: center;
 }
 
 .badge-categoria {
-  background: #eef2ff;
-  color: #4338ca;
+  background: #4338ca;
+  color: white;
   padding: 4px 10px;
   border-radius: 15px;
   font-size: 12px;
+  white-space: nowrap;
 }
 
-/* LISTA */
+.conteudo-categoria {
+  margin-top: 10px;
+}
+
+.escondido {
+  display: none;
+}
 
 .lista {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
-/* ITEM */
 
 .item {
   display: flex;
@@ -145,14 +181,16 @@ body {
   background: #f9fafb;
   border-radius: 8px;
   padding: 12px;
+  gap: 12px;
 }
 
 .item.concluida {
   opacity: 0.6;
-  text-decoration: line-through;
 }
 
-/* PRIORIDADES */
+.item.concluida .texto {
+  text-decoration: line-through;
+}
 
 .prioridade-alta {
   border-left: 5px solid #ef4444;
@@ -166,20 +204,21 @@ body {
   border-left: 5px solid #10b981;
 }
 
-/* TEXTO */
-
 .conteudo-tarefa {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+}
+
+.texto {
+  font-size: 15px;
 }
 
 .meta {
   font-size: 12px;
   color: #6b7280;
 }
-
-/* TAG PRIORIDADE */
 
 .tag-prioridade {
   padding: 2px 8px;
@@ -200,11 +239,10 @@ body {
   background: #10b981;
 }
 
-/* BOTÕES */
-
 .acoes {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -244,10 +282,27 @@ body {
   background: #1f2937;
 }
 
-/* VAZIO */
-
 .vazio {
   text-align: center;
   color: #6b7280;
   padding: 20px;
+}
+
+@media (max-width: 700px) {
+  .item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acoes {
+    width: 100%;
+  }
+
+  .cabecalho-categoria {
+    align-items: flex-start;
+  }
+
+  .badge-categoria {
+    font-size: 11px;
+  }
 }

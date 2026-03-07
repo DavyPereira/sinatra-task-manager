@@ -68,42 +68,52 @@
           Nenhuma tarefa encontrada neste filtro.
         </div>
       <% else %>
-        <% @tarefas_por_categoria.each do |categoria, tarefas| %>
+        <% @tarefas_por_categoria.each_with_index do |(categoria, tarefas), index| %>
           <section class="bloco-categoria">
-            <div class="cabecalho-categoria">
-              <h2><%= categoria %></h2>
+            <button
+              type="button"
+              class="cabecalho-categoria botao-categoria"
+              onclick="alternarCategoria('categoria-<%= index %>')"
+            >
+              <div class="titulo-categoria">
+                <span class="seta">▸</span>
+                <h2><%= categoria %></h2>
+              </div>
+
               <span class="badge-categoria"><%= tarefas.count %> tarefa(s)</span>
-            </div>
+            </button>
 
-            <div class="lista">
-              <% tarefas.each do |tarefa| %>
-                <div class="item <%= 'concluida' if tarefa[:concluida] %> prioridade-<%= tarefa[:prioridade] || 'media' %>">
-                  <div class="conteudo-tarefa">
-                    <div class="texto">
-                      <%= tarefa[:texto] %>
+            <div id="categoria-<%= index %>" class="conteudo-categoria escondido">
+              <div class="lista">
+                <% tarefas.each do |tarefa| %>
+                  <div class="item <%= 'concluida' if tarefa[:concluida] %> prioridade-<%= tarefa[:prioridade] || 'media' %>">
+                    <div class="conteudo-tarefa">
+                      <div class="texto">
+                        <%= tarefa[:texto] %>
+                      </div>
+
+                      <div class="meta">
+                        Prioridade:
+                        <span class="tag-prioridade <%= tarefa[:prioridade] || 'media' %>">
+                          <%= (tarefa[:prioridade] || 'media').capitalize %>
+                        </span>
+                      </div>
                     </div>
 
-                    <div class="meta">
-                      Prioridade:
-                      <span class="tag-prioridade <%= tarefa[:prioridade] || 'media' %>">
-                        <%= (tarefa[:prioridade] || 'media').capitalize %>
-                      </span>
+                    <div class="acoes">
+                      <form action="/tarefas/<%= tarefa[:id] %>/concluir" method="post">
+                        <button type="submit" class="btn concluir">
+                          <%= tarefa[:concluida] ? 'Desmarcar' : 'Concluir' %>
+                        </button>
+                      </form>
+
+                      <form action="/tarefas/<%= tarefa[:id] %>/excluir" method="post" onsubmit="return confirm('Excluir esta tarefa?')">
+                        <button type="submit" class="btn excluir">Excluir</button>
+                      </form>
                     </div>
                   </div>
-
-                  <div class="acoes">
-                    <form action="/tarefas/<%= tarefa[:id] %>/concluir" method="post">
-                      <button type="submit" class="btn concluir">
-                        <%= tarefa[:concluida] ? 'Desmarcar' : 'Concluir' %>
-                      </button>
-                    </form>
-
-                    <form action="/tarefas/<%= tarefa[:id] %>/excluir" method="post" onsubmit="return confirm('Excluir esta tarefa?')">
-                      <button type="submit" class="btn excluir">Excluir</button>
-                    </form>
-                  </div>
-                </div>
-              <% end %>
+                <% end %>
+              </div>
             </div>
           </section>
         <% end %>
@@ -116,5 +126,22 @@
       <% end %>
     </section>
   </main>
+
+  <script>
+    function alternarCategoria(id) {
+      const conteudo = document.getElementById(id);
+      const botao = conteudo.previousElementSibling;
+      const seta = botao.querySelector('.seta');
+
+      conteudo.classList.toggle('escondido');
+      botao.classList.toggle('aberta');
+
+      if (conteudo.classList.contains('escondido')) {
+        seta.textContent = '▸';
+      } else {
+        seta.textContent = '▾';
+      }
+    }
+  </script>
 </body>
 </html>
