@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require 'uri'
 
 set :bind, '0.0.0.0'
 set :port, ENV.fetch('PORT', 4567)
@@ -31,6 +32,10 @@ def proximo_id(tarefas)
   tarefas.map { |t| t[:id] }.max + 1
 end
 
+def mensagem_url(texto)
+  URI.encode_www_form_component(texto)
+end
+
 get '/' do
   tarefas = carregar_tarefas
 
@@ -39,7 +44,7 @@ get '/' do
   tarefas = tarefas.map do |tarefa|
     tarefa[:categoria] = tarefa[:categoria].to_s.strip.empty? ? 'Geral' : tarefa[:categoria]
     tarefa[:prioridade] = tarefa[:prioridade].to_s.strip.empty? ? 'media' : tarefa[:prioridade]
-    tarefa[:observacao] = tarefa[:observacao].to_s
+    tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
     tarefa
   end
 
@@ -81,14 +86,13 @@ post '/tarefas' do
   texto = params[:texto].to_s.strip
   prioridade = params[:prioridade].to_s.strip.downcase
   categoria = params[:categoria].to_s.strip
-  observacao = params[:observacao].to_s.strip
 
   prioridades_validas = %w[alta media baixa]
   prioridade = 'media' unless prioridades_validas.include?(prioridade)
   categoria = 'Geral' if categoria.empty?
 
   if texto.empty?
-    redirect '/?mensagem=Digite+uma+tarefa+valida'
+    redirect "/?mensagem=#{mensagem_url('Digite uma tarefa válida')}"
   end
 
   tarefa_duplicada = tarefas.any? do |t|
@@ -97,7 +101,7 @@ post '/tarefas' do
   end
 
   if tarefa_duplicada
-    redirect "/?mensagem=Essa+tarefa+ja+existe+na+categoria+#{categoria.gsub(' ', '+')}"
+    redirect "/?mensagem=#{mensagem_url("Essa tarefa já existe na categoria #{categoria}")}"
   end
 
   tarefas << {
@@ -105,12 +109,35 @@ post '/tarefas' do
     texto: texto,
     categoria: categoria,
     prioridade: prioridade,
-    observacao: observacao,
-    concluida: false
+    concluida: false,
+    observacoes: []
   }
 
   salvar_tarefas(tarefas)
-  redirect '/?mensagem=Tarefa+adicionada+com+sucesso'
+  redirect "/?mensagem=#{mensagem_url('Tarefa adicionada com sucesso')}"
+end
+
+post '/tarefas/:id/observacoes' do
+  tarefas = carregar_tarefas
+  id = params[:id].to_i
+  texto_observacao = params[:observacao].to_s.strip
+
+  tarefa = tarefas.find { |t| t[:id] == id }
+
+  unless tarefa
+    redirect "/?mensagem=#{mensagem_url('Tarefa não encontrada')}"
+  end
+
+  tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
+
+  if texto_observacao.empty?
+    redirect "/?mensagem=#{mensagem_url('Digite uma observação válida')}"
+  end
+
+  tarefa[:observacoes] << texto_observacao
+  salvar_tarefas(tarefas)
+
+  redirect "/?mensagem=#{mensagem_url('Observação adicionada com sucesso')}"
 end
 
 post '/tarefas/:id/concluir' do

@@ -6,14 +6,13 @@
   <title>DAVY BRAGA - Lista de Tarefas</title>
   <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
   <main class="container">
     <section class="card">
 
       <header class="topo">
         <h1>Lista de Tarefas</h1>
-        <p>Organize o dia por categorias, prioridades e observações.</p>
+        <p>Organize o dia por categorias, prioridades e pendências.</p>
       </header>
 
       <% unless @mensagem.to_s.empty? %>
@@ -23,7 +22,6 @@
       <% end %>
 
       <form action="/tarefas" method="post" class="nova-tarefa-form">
-
         <input
           type="text"
           name="texto"
@@ -35,17 +33,10 @@
         <input
           type="text"
           name="categoria"
-          placeholder="Categoria ou pendência (ex: Clientes novos)"
+          placeholder="Categoria ou pendência (ex: Fortes)"
           maxlength="60"
           required
         >
-
-        <textarea
-          name="observacao"
-          placeholder="Adicione uma observação da tarefa..."
-          maxlength="300"
-          class="campo-observacao"
-        ></textarea>
 
         <select name="prioridade">
           <option value="alta">Alta</option>
@@ -54,7 +45,6 @@
         </select>
 
         <button type="submit">Adicionar</button>
-
       </form>
 
       <div class="resumo">
@@ -110,17 +100,45 @@
                         <%= tarefa[:texto] %>
                       </div>
 
-                      <% unless tarefa[:observacao].to_s.strip.empty? %>
-                        <div class="observacao">
-                          <strong>Observação:</strong> <%= tarefa[:observacao] %>
-                        </div>
-                      <% end %>
-
                       <div class="meta">
                         Prioridade:
                         <span class="tag-prioridade <%= tarefa[:prioridade] %>">
                           <%= tarefa[:prioridade].capitalize %>
                         </span>
+                      </div>
+
+                      <div class="observacoes-bloco">
+                        <div class="observacoes-topo">
+                          <h3>Observações</h3>
+                          <span class="observacoes-contador">
+                            <%= tarefa[:observacoes].length %>
+                          </span>
+                        </div>
+
+                        <% if tarefa[:observacoes].any? %>
+                          <ul class="lista-observacoes">
+                            <% tarefa[:observacoes].each do |observacao| %>
+                              <li><%= observacao %></li>
+                            <% end %>
+                          </ul>
+                        <% else %>
+                          <div class="sem-observacoes">
+                            Nenhuma observação adicionada.
+                          </div>
+                        <% end %>
+
+                        <form action="/tarefas/<%= tarefa[:id] %>/observacoes" method="post" class="form-observacao">
+                          <textarea
+                            name="observacao"
+                            rows="3"
+                            placeholder="Digite uma observação para esta tarefa..."
+                            required
+                          ></textarea>
+
+                          <button type="submit" class="btn btn-observacao">
+                            Adicionar observação
+                          </button>
+                        </form>
                       </div>
                     </div>
 
