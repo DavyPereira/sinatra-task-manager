@@ -92,7 +92,7 @@
 
             <div id="categoria-<%= index %>" class="conteudo-categoria escondido">
               <div class="lista">
-                <% tarefas.each do |tarefa| %>
+                <% tarefas.each_with_index do |tarefa, tarefa_index| %>
                   <div class="item <%= 'concluida' if tarefa[:concluida] %> prioridade-<%= tarefa[:prioridade] %>">
 
                     <div class="conteudo-tarefa">
@@ -107,38 +107,75 @@
                         </span>
                       </div>
 
-                      <div class="observacoes-bloco">
-                        <div class="observacoes-topo">
-                          <h3>Observações</h3>
-                          <span class="observacoes-contador">
-                            <%= tarefa[:observacoes].length %>
-                          </span>
-                        </div>
+                      <div class="observacoes-modulo">
+                        <button
+                          type="button"
+                          class="btn-observacoes-toggle"
+                          onclick="alternarObservacoes('obs-<%= tarefa[:id] %>', this)"
+                        >
+                          <span>Observações</span>
+                          <span class="observacoes-badge"><%= tarefa[:observacoes].length %></span>
+                        </button>
 
-                        <% if tarefa[:observacoes].any? %>
-                          <ul class="lista-observacoes">
-                            <% tarefa[:observacoes].each do |observacao| %>
-                              <li><%= observacao %></li>
-                            <% end %>
-                          </ul>
-                        <% else %>
-                          <div class="sem-observacoes">
-                            Nenhuma observação adicionada.
+                        <div id="obs-<%= tarefa[:id] %>" class="observacoes-painel escondido">
+                          <div class="observacoes-topo">
+                            <h3>Observações da tarefa</h3>
+
+                            <button
+                              type="button"
+                              class="btn-nova-observacao"
+                              onclick="alternarFormularioObservacao('form-obs-<%= tarefa[:id] %>')"
+                            >
+                              Nova observação
+                            </button>
                           </div>
-                        <% end %>
 
-                        <form action="/tarefas/<%= tarefa[:id] %>/observacoes" method="post" class="form-observacao">
-                          <textarea
-                            name="observacao"
-                            rows="3"
-                            placeholder="Digite uma observação para esta tarefa..."
-                            required
-                          ></textarea>
+                          <% if tarefa[:observacoes].any? %>
+                            <div class="lista-observacoes">
+                              <% tarefa[:observacoes].each_with_index do |observacao, obs_index| %>
+                                <div class="observacao-item">
+                                  <div class="observacao-texto">
+                                    <%= observacao %>
+                                  </div>
 
-                          <button type="submit" class="btn btn-observacao">
-                            Adicionar observação
-                          </button>
-                        </form>
+                                  <form
+                                    action="/tarefas/<%= tarefa[:id] %>/observacoes/<%= obs_index %>/excluir"
+                                    method="post"
+                                    onsubmit="return confirm('Excluir esta observação?')"
+                                  >
+                                    <button type="submit" class="btn-excluir-observacao">
+                                      Excluir
+                                    </button>
+                                  </form>
+                                </div>
+                              <% end %>
+                            </div>
+                          <% else %>
+                            <div class="sem-observacoes">
+                              Nenhuma observação adicionada.
+                            </div>
+                          <% end %>
+
+                          <form
+                            id="form-obs-<%= tarefa[:id] %>"
+                            action="/tarefas/<%= tarefa[:id] %>/observacoes"
+                            method="post"
+                            class="form-observacao escondido"
+                          >
+                            <textarea
+                              name="observacao"
+                              rows="4"
+                              placeholder="Digite uma observação para esta tarefa..."
+                              required
+                            ></textarea>
+
+                            <div class="acoes-observacao">
+                              <button type="submit" class="btn btn-observacao">
+                                Salvar observação
+                              </button>
+                            </div>
+                          </form>
+                        </div>
                       </div>
                     </div>
 
@@ -189,6 +226,17 @@
       } else {
         seta.textContent = '▾'
       }
+    }
+
+    function alternarObservacoes(id, botao) {
+      const painel = document.getElementById(id)
+      painel.classList.toggle('escondido')
+      botao.classList.toggle('ativo')
+    }
+
+    function alternarFormularioObservacao(id) {
+      const formulario = document.getElementById(id)
+      formulario.classList.toggle('escondido')
     }
   </script>
 </body>

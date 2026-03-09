@@ -140,6 +140,28 @@ post '/tarefas/:id/observacoes' do
   redirect "/?mensagem=#{mensagem_url('Observação adicionada com sucesso')}"
 end
 
+post '/tarefas/:id/observacoes/:obs_index/excluir' do
+  tarefas = carregar_tarefas
+  id = params[:id].to_i
+  obs_index = params[:obs_index].to_i
+
+  tarefa = tarefas.find { |t| t[:id] == id }
+
+  unless tarefa
+    redirect "/?mensagem=#{mensagem_url('Tarefa não encontrada')}"
+  end
+
+  tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
+
+  if obs_index >= 0 && obs_index < tarefa[:observacoes].length
+    tarefa[:observacoes].delete_at(obs_index)
+    salvar_tarefas(tarefas)
+    redirect "/?mensagem=#{mensagem_url('Observação excluída com sucesso')}"
+  end
+
+  redirect "/?mensagem=#{mensagem_url('Observação não encontrada')}"
+end
+
 post '/tarefas/:id/concluir' do
   tarefas = carregar_tarefas
   id = params[:id].to_i
