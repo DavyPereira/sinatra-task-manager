@@ -39,6 +39,7 @@ get '/' do
   tarefas = tarefas.map do |tarefa|
     tarefa[:categoria] = tarefa[:categoria].to_s.strip.empty? ? 'Geral' : tarefa[:categoria]
     tarefa[:prioridade] = tarefa[:prioridade].to_s.strip.empty? ? 'media' : tarefa[:prioridade]
+    tarefa[:observacao] = tarefa[:observacao].to_s
     tarefa
   end
 
@@ -80,6 +81,7 @@ post '/tarefas' do
   texto = params[:texto].to_s.strip
   prioridade = params[:prioridade].to_s.strip.downcase
   categoria = params[:categoria].to_s.strip
+  observacao = params[:observacao].to_s.strip
 
   prioridades_validas = %w[alta media baixa]
   prioridade = 'media' unless prioridades_validas.include?(prioridade)
@@ -103,6 +105,7 @@ post '/tarefas' do
     texto: texto,
     categoria: categoria,
     prioridade: prioridade,
+    observacao: observacao,
     concluida: false
   }
 
