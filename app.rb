@@ -1,195 +1,93 @@
 require 'sinatra'
-require 'json'
+require 'pg'
 require 'uri'
 
 set :bind, '0.0.0.0'
 set :port, ENV.fetch('PORT', 4567)
 
-ARQUIVO_TAREFAS = ENV.fetch('ARQUIVO_TAREFAS', File.expand_path('tarefas.json', __dir__))
-
-def garantir_arquivo
-  return if File.exist?(ARQUIVO_TAREFAS)
-  File.write(ARQUIVO_TAREFAS, '[]')
+def db
+  @db ||= PG.connect(ENV['DATABASE_URL'])
 end
 
-def carregar_tarefas
-  garantir_arquivo
+def init_db
+  db.exec <<-SQL
+  CREATE TABLE IF NOT EXISTS tarefas (
+    id SERIAL PRIMARY KEY,
+    texto TEXT NOT NULL,
+    categoria TEXT,
+    prioridade TEXT,
+    concluida BOOLEAN DEFAULT FALSE
+  );
+  SQL
 
-  conteudo = File.read(ARQUIVO_TAREFAS).strip
-  return [] if conteudo.empty?
-
-  JSON.parse(conteudo, symbolize_names: true)
-rescue JSON::ParserError
-  []
+  db.exec <<-SQL
+  CREATE TABLE IF NOT EXISTS observacoes (
+    id SERIAL PRIMARY KEY,
+    tarefa_id INTEGER REFERENCES tarefas(id) ON DELETE CASCADE,
+    texto TEXT
+  );
+  SQL
 end
 
-def salvar_tarefas(tarefas)
-  File.write(ARQUIVO_TAREFAS, JSON.pretty_generate(tarefas))
-end
-
-def proximo_id(tarefas)
-  return 1 if tarefas.empty?
-  tarefas.map { |t| t[:id] }.max + 1
-end
-
-def mensagem_url(texto)
-  URI.encode_www_form_component(texto)
-end
+init_db
 
 get '/' do
-  tarefas = carregar_tarefas
+  tarefas = db.exec("SELECT * FROM tarefas ORDER BY id DESC")
 
-  ordem_prioridade = { "alta" => 0, "media" => 1, "baixa" => 2 }
-
-  tarefas = tarefas.map do |tarefa|
-    tarefa[:categoria] = tarefa[:categoria].to_s.strip.empty? ? 'Geral' : tarefa[:categoria]
-    tarefa[:prioridade] = tarefa[:prioridade].to_s.strip.empty? ? 'media' : tarefa[:prioridade]
-    tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
-    tarefa
+  tarefas.each do |t|
+    obs = db.exec_params("SELECT * FROM observacoes WHERE tarefa_id=$1", [t['id']])
+    t['observacoes'] = obs
   end
 
-  tarefas = tarefas.sort_by do |tarefa|
-    [
-      tarefa[:categoria].downcase,
-      tarefa[:concluida] ? 1 : 0,
-      ordem_prioridade[tarefa[:prioridade].to_s] || 3,
-      tarefa[:id]
-    ]
-  end
-
-  @filtro = params[:filtro].to_s
-  @mensagem = params[:mensagem].to_s
-
-  @tarefas_filtradas =
-    case @filtro
-    when 'pendentes'
-      tarefas.select { |t| !t[:concluida] }
-    when 'concluidas'
-      tarefas.select { |t| t[:concluida] }
-    else
-      @filtro = 'todas'
-      tarefas
-    end
-
-  @tarefas_por_categoria = @tarefas_filtradas.group_by { |t| t[:categoria] }
-
-  @total_tarefas = tarefas.length
-  @total_pendentes = tarefas.count { |t| !t[:concluida] }
-  @total_concluidas = tarefas.count { |t| t[:concluida] }
-
+  @tarefas = tarefas
   erb :index
 end
 
 post '/tarefas' do
-  tarefas = carregar_tarefas
+  texto = params[:texto]
+  categoria = params[:categoria]
+  prioridade = params[:prioridade]
 
-  texto = params[:texto].to_s.strip
-  prioridade = params[:prioridade].to_s.strip.downcase
-  categoria = params[:categoria].to_s.strip
+  db.exec_params(
+    "INSERT INTO tarefas (texto,categoria,prioridade) VALUES ($1,$2,$3)",
+    [texto,categoria,prioridade]
+  )
 
-  prioridades_validas = %w[alta media baixa]
-  prioridade = 'media' unless prioridades_validas.include?(prioridade)
-  categoria = 'Geral' if categoria.empty?
-
-  if texto.empty?
-    redirect "/?mensagem=#{mensagem_url('Digite uma tarefa válida')}"
-  end
-
-  tarefa_duplicada = tarefas.any? do |t|
-    t[:texto].to_s.strip.downcase == texto.downcase &&
-      t[:categoria].to_s.strip.downcase == categoria.downcase
-  end
-
-  if tarefa_duplicada
-    redirect "/?mensagem=#{mensagem_url("Essa tarefa já existe na categoria #{categoria}")}"
-  end
-
-  tarefas << {
-    id: proximo_id(tarefas),
-    texto: texto,
-    categoria: categoria,
-    prioridade: prioridade,
-    concluida: false,
-    observacoes: []
-  }
-
-  salvar_tarefas(tarefas)
-  redirect "/?mensagem=#{mensagem_url('Tarefa adicionada com sucesso')}"
-end
-
-post '/tarefas/:id/observacoes' do
-  tarefas = carregar_tarefas
-  id = params[:id].to_i
-  texto_observacao = params[:observacao].to_s.strip
-
-  tarefa = tarefas.find { |t| t[:id] == id }
-
-  unless tarefa
-    redirect "/?mensagem=#{mensagem_url('Tarefa não encontrada')}"
-  end
-
-  tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
-
-  if texto_observacao.empty?
-    redirect "/?mensagem=#{mensagem_url('Digite uma observação válida')}"
-  end
-
-  tarefa[:observacoes] << texto_observacao
-  salvar_tarefas(tarefas)
-
-  redirect "/?mensagem=#{mensagem_url('Observação adicionada com sucesso')}"
-end
-
-post '/tarefas/:id/observacoes/:obs_index/excluir' do
-  tarefas = carregar_tarefas
-  id = params[:id].to_i
-  obs_index = params[:obs_index].to_i
-
-  tarefa = tarefas.find { |t| t[:id] == id }
-
-  unless tarefa
-    redirect "/?mensagem=#{mensagem_url('Tarefa não encontrada')}"
-  end
-
-  tarefa[:observacoes] = [] unless tarefa[:observacoes].is_a?(Array)
-
-  if obs_index >= 0 && obs_index < tarefa[:observacoes].length
-    tarefa[:observacoes].delete_at(obs_index)
-    salvar_tarefas(tarefas)
-    redirect "/?mensagem=#{mensagem_url('Observação excluída com sucesso')}"
-  end
-
-  redirect "/?mensagem=#{mensagem_url('Observação não encontrada')}"
+  redirect '/'
 end
 
 post '/tarefas/:id/concluir' do
-  tarefas = carregar_tarefas
-  id = params[:id].to_i
-
-  tarefa = tarefas.find { |t| t[:id] == id }
-
-  if tarefa
-    tarefa[:concluida] = !tarefa[:concluida]
-    salvar_tarefas(tarefas)
-  end
+  db.exec_params(
+    "UPDATE tarefas SET concluida = NOT concluida WHERE id=$1",
+    [params[:id]]
+  )
 
   redirect '/'
 end
 
 post '/tarefas/:id/excluir' do
-  tarefas = carregar_tarefas
-  id = params[:id].to_i
-
-  tarefas.reject! { |t| t[:id] == id }
-  salvar_tarefas(tarefas)
+  db.exec_params(
+    "DELETE FROM tarefas WHERE id=$1",
+    [params[:id]]
+  )
 
   redirect '/'
 end
 
-post '/limpar_concluidas' do
-  tarefas = carregar_tarefas
-  tarefas.reject! { |t| t[:concluida] }
-  salvar_tarefas(tarefas)
+post '/tarefas/:id/observacoes' do
+  db.exec_params(
+    "INSERT INTO observacoes (tarefa_id,texto) VALUES ($1,$2)",
+    [params[:id],params[:observacao]]
+  )
+
+  redirect '/'
+end
+
+post '/observacoes/:id/excluir' do
+  db.exec_params(
+    "DELETE FROM observacoes WHERE id=$1",
+    [params[:id]]
+  )
 
   redirect '/'
 end
