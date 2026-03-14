@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'pg'
 require 'uri'
+require 'json'
 
 set :bind, '0.0.0.0'
 set :port, ENV.fetch('PORT', 4567)
@@ -200,35 +201,67 @@ post '/limpar_concluidas' do
 end
 
 post '/tarefas/:id/observacoes' do
+  content_type :json
+
   tarefa_id = params[:id].to_i
   texto = params[:observacao].to_s.strip
 
   if texto.empty?
-    redirect "/?mensagem=#{mensagem_url('Digite uma observação válida')}"
+    status 422
+    return({ sucesso: false, mensagem: 'Digite uma observação válida' }.to_json)
   end
+
+  observacao = nil
 
   with_db do |db|
     existe = db.exec_params('SELECT 1 FROM tarefas WHERE id = $1 LIMIT 1', [tarefa_id])
 
     if existe.ntuples.zero?
-      redirect "/?mensagem=#{mensagem_url('Tarefa não encontrada')}"
+      status 404
+      return({ sucesso: false, mensagem: 'Tarefa não encontrada' }.to_json)
     end
 
-    db.exec_params(
-      'INSERT INTO observacoes (tarefa_id, texto) VALUES ($1, $2)',
+    result = db.exec_params(
+      'INSERT INTO observacoes (tarefa_id, texto) VALUES ($1, $2) RETURNING id, texto',
       [tarefa_id, texto]
     )
+
+    row = result.first
+
+    observacao = {
+      id: row['id'],
+      texto: row['texto']
+    }
   end
 
-  redirect "/?mensagem=#{mensagem_url('Observação adicionada com sucesso')}"
+  {
+    sucesso: true,
+    mensagem: 'Observação adicionada com sucesso',
+    observacao: observacao
+  }.to_json
 end
 
 post '/observacoes/:id/excluir' do
+  content_type :json
+
   obs_id = params[:id].to_i
 
-  with_db do |db|
-    db.exec_params('DELETE FROM observacoes WHERE id = $1', [obs_id])
+  excluida = with_db do |db|
+    result = db.exec_params(
+      'DELETE FROM observacoes WHERE id = $1 RETURNING id',
+      [obs_id]
+    )
+    result.ntuples.positive?
   end
 
-  redirect "/?mensagem=#{mensagem_url('Observação excluída com sucesso')}"
+  unless excluida
+    status 404
+    return({ sucesso: false, mensagem: 'Observação não encontrada' }.to_json)
+  end
+
+  {
+    sucesso: true,
+    mensagem: 'Observação excluída com sucesso',
+    id: obs_id
+  }.to_json
 end
