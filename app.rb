@@ -8,7 +8,10 @@ enable :sessions
 
 set :bind, '0.0.0.0'
 set :port, ENV.fetch('PORT', 4567)
-set :session_secret, ENV.fetch('SESSION_SECRET', 'uma-chave-bem-secreta-troque-em-producao')
+set :session_secret, ENV.fetch(
+  'SESSION_SECRET',
+  'minha_chave_super_secreta_com_mais_de_64_caracteres_1234567890_abcdef_xyz_2026'
+)
 
 def with_db
   db = PG.connect(ENV.fetch('DATABASE_URL'))
