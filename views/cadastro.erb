@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro - Lista de Tarefas</title>
+  <link rel="icon" href="/favicon.png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -15,20 +16,68 @@
       </header>
 
       <% unless @mensagem.to_s.empty? %>
-        <div class="mensagem"><%= @mensagem %></div>
+        <div class="mensagem">
+          <%= @mensagem %>
+        </div>
       <% end %>
 
-      <form action="/cadastro" method="post" class="nova-tarefa-form">
-        <input type="text" name="nome" placeholder="Seu nome" required>
-        <input type="email" name="email" placeholder="Seu e-mail" required>
-        <input type="password" name="senha" placeholder="Crie uma senha" required>
+      <form action="/cadastro" method="post" class="auth-form">
+        <input
+          type="text"
+          name="nome"
+          placeholder="Seu nome"
+          required
+        >
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Seu e-mail"
+          required
+        >
+
+        <div class="campo-senha">
+          <input
+            type="password"
+            name="senha"
+            id="senha-cadastro"
+            placeholder="Crie uma senha"
+            required
+          >
+
+          <button
+            type="button"
+            class="toggle-senha"
+            onclick="toggleSenha('senha-cadastro', this)"
+            aria-label="Mostrar senha"
+          >
+            👁
+          </button>
+        </div>
+
         <button type="submit">Criar conta</button>
       </form>
 
-      <p style="margin-top: 16px;">
+      <p class="auth-link">
         Já tem conta? <a href="/login">Entrar</a>
       </p>
     </section>
   </main>
+
+  <script>
+    function toggleSenha(inputId, botao) {
+      const campo = document.getElementById(inputId)
+
+      if (campo.type === 'password') {
+        campo.type = 'text'
+        botao.textContent = '🙈'
+        botao.setAttribute('aria-label', 'Ocultar senha')
+      } else {
+        campo.type = 'password'
+        botao.textContent = '👁'
+        botao.setAttribute('aria-label', 'Mostrar senha')
+      }
+    }
+  </script>
 </body>
 </html>

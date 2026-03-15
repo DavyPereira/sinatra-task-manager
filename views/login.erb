@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Lista de Tarefas</title>
+  <link rel="icon" href="/favicon.png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -15,19 +16,61 @@
       </header>
 
       <% unless @mensagem.to_s.empty? %>
-        <div class="mensagem"><%= @mensagem %></div>
+        <div class="mensagem">
+          <%= @mensagem %>
+        </div>
       <% end %>
 
-      <form action="/login" method="post" class="nova-tarefa-form">
-        <input type="email" name="email" placeholder="Seu e-mail" required>
-        <input type="password" name="senha" placeholder="Sua senha" required>
+      <form action="/login" method="post" class="auth-form">
+        <input
+          type="email"
+          name="email"
+          placeholder="Seu e-mail"
+          required
+        >
+
+        <div class="campo-senha">
+          <input
+            type="password"
+            name="senha"
+            id="senha-login"
+            placeholder="Sua senha"
+            required
+          >
+
+          <button
+            type="button"
+            class="toggle-senha"
+            onclick="toggleSenha('senha-login', this)"
+            aria-label="Mostrar senha"
+          >
+            👁
+          </button>
+        </div>
+
         <button type="submit">Entrar</button>
       </form>
 
-      <p style="margin-top: 16px;">
+      <p class="auth-link">
         Não tem conta? <a href="/cadastro">Criar conta</a>
       </p>
     </section>
   </main>
+
+  <script>
+    function toggleSenha(inputId, botao) {
+      const campo = document.getElementById(inputId)
+
+      if (campo.type === 'password') {
+        campo.type = 'text'
+        botao.textContent = '🙈'
+        botao.setAttribute('aria-label', 'Ocultar senha')
+      } else {
+        campo.type = 'password'
+        botao.textContent = '👁'
+        botao.setAttribute('aria-label', 'Mostrar senha')
+      }
+    }
+  </script>
 </body>
 </html>
