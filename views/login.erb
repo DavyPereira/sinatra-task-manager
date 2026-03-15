@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Lista de Tarefas</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card auth-card">
+      <header class="topo">
+        <h1>Entrar</h1>
+        <p>Acesse sua conta para ver suas tarefas.</p>
+      </header>
+
+      <% unless @mensagem.to_s.empty? %>
+        <div class="mensagem"><%= @mensagem %></div>
+      <% end %>
+
+      <form action="/login" method="post" class="nova-tarefa-form">
+        <input type="email" name="email" placeholder="Seu e-mail" required>
+        <input type="password" name="senha" placeholder="Sua senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+
+      <p style="margin-top: 16px;">
+        Não tem conta? <a href="/cadastro">Criar conta</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

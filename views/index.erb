@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Task Flow - Lista de Tarefas</title>
-  <link rel="icon" href="/icons8-checklist-64.png" type="image/png">
+  <title>Lista de Tarefas</title>
+  <link rel="icon" href="/favicon.png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -12,8 +12,20 @@
     <section class="card">
 
       <header class="topo">
-        <h1>Lista de Tarefas</h1>
-        <p>Organize o dia por categorias, prioridades e pendências.</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div>
+            <h1>Lista de Tarefas</h1>
+            <p>Organize o dia por categorias, prioridades e pendências.</p>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span>Olá, <strong><%= @usuario_atual['nome'] %></strong></span>
+
+            <form action="/logout" method="post" style="margin:0;">
+              <button type="submit" class="btn excluir">Sair</button>
+            </form>
+          </div>
+        </div>
       </header>
 
       <% unless @mensagem.to_s.empty? %>
