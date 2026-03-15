@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lista de Tarefas</title>
-  <link rel="icon" href="/favicon.png">
+  <link rel="icon" href="/icons8-checklist-64.png" type="image/png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -279,25 +279,28 @@
       `
     }
 
-    function mostrarMensagem(texto, tipo = 'sucesso') {
-      let mensagem = document.querySelector('.mensagem')
+    <script>
+  function mostrarMensagem(texto, tipo = 'sucesso') {
+    let mensagem = document.querySelector('.mensagem')
 
-      if (!mensagem) {
-        mensagem = document.createElement('div')
-        mensagem.className = 'mensagem'
-        const topo = document.querySelector('.topo')
-        topo.insertAdjacentElement('afterend', mensagem)
-      }
-
-      mensagem.textContent = texto
-      mensagem.dataset.tipo = tipo
-
-      clearTimeout(mensagem._timer)
-
-      mensagem._timer = setTimeout(() => {
-        mensagem.textContent = ''
-      }, 3000)
+    if (!mensagem) {
+      mensagem = document.createElement('div')
+      mensagem.className = 'mensagem'
+      const topo = document.querySelector('.topo')
+      topo.insertAdjacentElement('afterend', mensagem)
     }
+
+    mensagem.className = `mensagem ${tipo}`
+    mensagem.textContent = texto
+
+    clearTimeout(mensagem._timer)
+
+    mensagem._timer = setTimeout(() => {
+      mensagem.textContent = ''
+      mensagem.className = 'mensagem'
+    }, 3000)
+  }
+</script>
 
     function atualizarBadgeObservacoes(tarefaId, quantidade) {
       const badge = document.getElementById(`badge-observacoes-${tarefaId}`)

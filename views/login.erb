@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Lista de Tarefas</title>
-  <link rel="icon" href="/favicon.png">
+  <link rel="icon" href="/icons8-checklist-64.png" type="image/png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -16,10 +16,10 @@
       </header>
 
       <% unless @mensagem.to_s.empty? %>
-        <div class="mensagem">
-          <%= @mensagem %>
-        </div>
-      <% end %>
+  <div class="mensagem erro">
+    <%= @mensagem %>
+  </div>
+<% end %>
 
       <form action="/login" method="post" class="auth-form">
         <input

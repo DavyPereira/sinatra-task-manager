@@ -44,6 +44,16 @@ body {
   font-weight: 500;
 }
 
+.mensagem.sucesso {
+  background: #e9f7ef;
+  color: #1e7f43;
+}
+
+.mensagem.erro {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .nova-tarefa-form {
   margin-top: 22px;
   display: flex;
