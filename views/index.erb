@@ -228,79 +228,7 @@
     </section>
   </main>
 
-  <script>
-    function alternarCategoria(id) {
-      const conteudo = document.getElementById(id)
-      const botao = conteudo.previousElementSibling
-      const seta = botao.querySelector('.seta')
-
-      conteudo.classList.toggle('escondido')
-      botao.classList.toggle('aberta')
-
-      if (conteudo.classList.contains('escondido')) {
-        seta.textContent = '▸'
-      } else {
-        seta.textContent = '▾'
-      }
-    }
-
-    function alternarObservacoes(id, botao) {
-      const painel = document.getElementById(id)
-      painel.classList.toggle('escondido')
-      botao.classList.toggle('ativo')
-    }
-
-    function alternarFormularioObservacao(id) {
-      const formulario = document.getElementById(id)
-      formulario.classList.toggle('escondido')
-    }
-
-    function escapeHtml(texto) {
-      const div = document.createElement('div')
-      div.textContent = texto
-      return div.innerHTML
-    }
-
-    function criarHtmlObservacao(observacao, tarefaId) {
-      return `
-        <div class="observacao-item" id="observacao-${observacao.id}">
-          <div class="observacao-texto">
-            ${escapeHtml(observacao.texto)}
-          </div>
-
-          <button
-            type="button"
-            class="btn-excluir-observacao"
-            onclick="excluirObservacao(${observacao.id}, ${tarefaId})"
-          >
-            Excluir
-          </button>
-        </div>
-      `
-    }
-
     <script>
-  function mostrarMensagem(texto, tipo = 'sucesso') {
-    let mensagem = document.querySelector('.mensagem')
-
-    if (!mensagem) {
-      mensagem = document.createElement('div')
-      mensagem.className = 'mensagem'
-      const topo = document.querySelector('.topo')
-      topo.insertAdjacentElement('afterend', mensagem)
-    }
-
-    mensagem.className = `mensagem ${tipo}`
-    mensagem.textContent = texto
-
-    clearTimeout(mensagem._timer)
-
-    mensagem._timer = setTimeout(() => {
-      mensagem.textContent = ''
-      mensagem.className = 'mensagem'
-    }, 3000)
-  }
-  <script>
     function alternarCategoria(id) {
       const conteudo = document.getElementById(id)
       const botao = conteudo.previousElementSibling
@@ -308,12 +236,7 @@
 
       conteudo.classList.toggle('escondido')
       botao.classList.toggle('aberta')
-
-      if (conteudo.classList.contains('escondido')) {
-        seta.textContent = '▸'
-      } else {
-        seta.textContent = '▾'
-      }
+      seta.textContent = conteudo.classList.contains('escondido') ? '▸' : '▾'
     }
 
     function alternarObservacoes(id, botao) {
@@ -365,7 +288,6 @@
       mensagem.textContent = texto
 
       clearTimeout(mensagem._timer)
-
       mensagem._timer = setTimeout(() => {
         mensagem.textContent = ''
         mensagem.className = 'mensagem'
@@ -402,9 +324,7 @@
           return
         }
 
-        if (item) {
-          item.remove()
-        }
+        if (item) item.remove()
 
         const quantidadeRestante = lista ? lista.querySelectorAll('.observacao-item').length : 0
         atualizarBadgeObservacoes(tarefaId, quantidadeRestante)
